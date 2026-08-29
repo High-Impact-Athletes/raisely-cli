@@ -90,16 +90,20 @@ test('start refuses to run on legacy layout', async () => {
 // ---------------------------------------------------------------------------
 
 test('update passes the layout gate on a v2 fixture', async () => {
+	// allowDirty bypasses the git safety gate (covered in git-guard.test.js);
+	// the fixture lives inside this repo, so its git state is not deterministic
 	const { output, exitCode } = await runInV2Fixture(() =>
-		update({ force: true })
+		update({ force: true, allowDirty: true })
 	);
 	assert.notEqual(exitCode, 1);
 	assert.doesNotMatch(output, /Cannot run `raisely update`/);
 });
 
 test('deploy passes the layout gate on a v2 fixture', async () => {
+	// allowStale bypasses the git safety gate (covered in git-guard.test.js);
+	// there is no sync marker for the fixture directory
 	const { output, exitCode } = await runInV2Fixture(() =>
-		deploy({ force: true })
+		deploy({ force: true, allowStale: true })
 	);
 	assert.notEqual(exitCode, 1);
 	assert.doesNotMatch(output, /Cannot run `raisely deploy`/);

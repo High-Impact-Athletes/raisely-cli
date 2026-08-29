@@ -11,12 +11,19 @@ import {
 } from './actions/layout.js';
 import { loadConfig } from './config.js';
 import { getToken } from './actions/auth.js';
+import { gateUpdate, writeSyncMarker } from './actions/git-guard.js';
 
 export default async function update(options = {}) {
 	const layout = detectLayout(process.cwd());
 	if (shouldRefuseLayoutForCommand('update', layout)) {
 		br();
 		log(getLegacyLayoutRefusalMessage('update', layout), 'red');
+		process.exitCode = 1;
+		return;
+	}
+
+	// git safety gate: refuse to pull the org state over uncommitted work
+	if (!gateUpdate({ cwd: process.cwd(), options })) {
 		process.exitCode = 1;
 		return;
 	}
@@ -66,6 +73,13 @@ export default async function update(options = {}) {
 
 	// sync down campaign pages
 	await syncPages();
+
+	// record the successful sync for the deploy staleness check
+	try {
+		writeSyncMarker(process.cwd());
+	} catch (e) {
+		log(`Could not record the sync time: ${e.message}`, 'yellow');
+	}
 
 	br();
 	log(

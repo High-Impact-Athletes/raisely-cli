@@ -21,17 +21,19 @@ import {
 import { uploadPage } from './actions/pages.js';
 import { loadConfig } from './config.js';
 import { getToken } from './actions/auth.js';
-import {
-	validateCampaignSass,
-	validateComponent,
-} from './actions/validate.js';
+import { gateDeploy } from './actions/git-guard.js';
+import { validateCampaignSass, validateComponent } from './actions/validate.js';
 
 function formatValidationErrors(errors) {
 	return errors.map(({ context, error }) => `${context}: ${error}`);
 }
 
 function normalizeValidationResult(result, fallbackError) {
-	if (result && typeof result === 'object' && typeof result.ok === 'boolean') {
+	if (
+		result &&
+		typeof result === 'object' &&
+		typeof result.ok === 'boolean'
+	) {
 		return {
 			ok: result.ok,
 			error:
@@ -49,7 +51,8 @@ function normalizeValidationResult(result, fallbackError) {
 
 function toErrorMessage(error, fallback) {
 	if (typeof error === 'string' && error.trim()) return error.trim();
-	if (error instanceof Error && error.message.trim()) return error.message.trim();
+	if (error instanceof Error && error.message.trim())
+		return error.message.trim();
 	if (error && typeof error.message === 'string' && error.message.trim()) {
 		return error.message.trim();
 	}
@@ -156,6 +159,13 @@ export default async function deploy(options = {}) {
 
 	// load config
 	let config = await loadConfig();
+
+	// git safety gate: block deploys from a stale local copy
+	if (!(await gateDeploy({ cwd, config, options }))) {
+		process.exitCode = 1;
+		return;
+	}
+
 	config.token = await getToken(program, config);
 
 	welcome();
@@ -226,11 +236,18 @@ export default async function deploy(options = {}) {
 	const componentsDir = path.join(cwd, 'components');
 	if (fs.existsSync(componentsDir)) {
 		for (const file of fs.readdirSync(componentsDir)) {
-			if (!fs.statSync(path.join(componentsDir, file)).isDirectory()) continue;
+			if (!fs.statSync(path.join(componentsDir, file)).isDirectory())
+				continue;
 			const data = {
-				file: fs.readFileSync(path.join(componentsDir, file, `${file}.js`), 'utf8'),
+				file: fs.readFileSync(
+					path.join(componentsDir, file, `${file}.js`),
+					'utf8'
+				),
 				config: JSON.parse(
-					fs.readFileSync(path.join(componentsDir, file, `${file}.json`), 'utf8')
+					fs.readFileSync(
+						path.join(componentsDir, file, `${file}.json`),
+						'utf8'
+					)
 				),
 			};
 
