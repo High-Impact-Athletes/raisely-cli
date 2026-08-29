@@ -33,6 +33,7 @@ const mocks = vi.hoisted(() => {
 		uploadPage: vi.fn(),
 		validateCampaignSass: vi.fn(),
 		validateComponent: vi.fn(),
+		gateDeploy: vi.fn(),
 		inquirerPrompt: vi.fn(),
 		glob: vi.fn(),
 		welcome: vi.fn(),
@@ -103,6 +104,10 @@ vi.mock('../src/actions/validate.js', () => ({
 	validateComponent: mocks.validateComponent,
 }));
 
+vi.mock('../src/actions/git-guard.js', () => ({
+	gateDeploy: mocks.gateDeploy,
+}));
+
 import deploy from '../src/deploy.js';
 
 function createDirent(name) {
@@ -132,6 +137,7 @@ function setDefaultMocks() {
 	mocks.uploadPage.mockResolvedValue(undefined);
 	mocks.validateCampaignSass.mockResolvedValue({ ok: true });
 	mocks.validateComponent.mockResolvedValue({ ok: true });
+	mocks.gateDeploy.mockResolvedValue(true);
 	mocks.inquirerPrompt.mockResolvedValue({ confirm: true });
 	mocks.glob.mockResolvedValue([]);
 	mocks.informUpdate.mockResolvedValue(undefined);
@@ -151,6 +157,17 @@ describe('deploy command', () => {
 		vi.spyOn(process, 'cwd').mockReturnValue('/repo');
 		process.exitCode = undefined;
 		setDefaultMocks();
+	});
+
+	test('a failed git safety gate blocks deploy before auth and uploads', async () => {
+		mocks.gateDeploy.mockResolvedValue(false);
+
+		await deploy({ force: true });
+
+		expect(process.exitCode).toBe(1);
+		expect(mocks.getToken).not.toHaveBeenCalled();
+		expect(mocks.uploadStyles).not.toHaveBeenCalled();
+		expect(mocks.uploadPage).not.toHaveBeenCalled();
 	});
 
 	test('validation failure prints all errors and blocks uploads', async () => {
