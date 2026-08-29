@@ -35,9 +35,21 @@ function actionBuilder(moduleLoader, commandName) {
 function parsePort(value) {
 	const port = Number(value);
 	if (!Number.isInteger(port) || port < 1 || port > 65535) {
-		throw new InvalidArgumentError('Port must be an integer between 1 and 65535');
+		throw new InvalidArgumentError(
+			'Port must be an integer between 1 and 65535'
+		);
 	}
 	return port;
+}
+
+function parseStaleAfter(value) {
+	const minutes = Number(value);
+	if (!Number.isFinite(minutes) || minutes <= 0) {
+		throw new InvalidArgumentError(
+			'Stale-after must be a positive number of minutes'
+		);
+	}
+	return minutes;
 }
 
 // define actions
@@ -83,6 +95,10 @@ export async function cli() {
 			'-f, --force',
 			'Update without asking for confirmation (non-interactive)'
 		)
+		.option(
+			'--allow-dirty',
+			'Skip the clean-git-tree safety check (uncommitted changes may be overwritten)'
+		)
 		.action(update);
 
 	program
@@ -97,6 +113,15 @@ export async function cli() {
 		.option(
 			'-f, --force',
 			'Deploy without asking for confirmation (non-interactive)'
+		)
+		.option(
+			'--allow-stale',
+			'Skip the recent-update safety check (admin edits since your last update may be overwritten)'
+		)
+		.option(
+			'--stale-after <minutes>',
+			'Max age of the last raisely update before deploy is blocked (default: 5)',
+			parseStaleAfter
 		)
 		.action(deploy);
 
@@ -131,7 +156,12 @@ export async function cli() {
 			'--uuid <uuid>',
 			'Open a specific campaign by UUID (skips the campaign picker)'
 		)
-		.option('--port <port>', 'Override the local server port', parsePort, 8015)
+		.option(
+			'--port <port>',
+			'Override the local server port',
+			parsePort,
+			8015
+		)
 		.option('--no-open', 'Do not open a browser window')
 		.action(local);
 
@@ -139,7 +169,10 @@ export async function cli() {
 		.command('list')
 		.description('List all campaigns in your organisation (Name, Uuid)')
 		.option('--json', 'Output as JSON (forces machine format)')
-		.option('--tsv', 'Output as tab-separated values (forces machine format)')
+		.option(
+			'--tsv',
+			'Output as tab-separated values (forces machine format)'
+		)
 		.action(list);
 
 	program
