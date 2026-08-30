@@ -1,7 +1,8 @@
 {
-	"name": "@raisely/cli",
+	"name": "@hia/raisely-cli",
+	"private": true,
 	"version": "2.1.0",
-	"description": "Raisely CLI for local development",
+	"description": "Raisely CLI for local development (HIA fork build)",
 	"main": "./src/cli.js",
 	"type": "module",
 	"bin": {
