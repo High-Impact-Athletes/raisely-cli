@@ -11,10 +11,26 @@ independently.
 npm install -g "github:High-Impact-Athletes/raisely-cli#hia"
 ```
 
-Do **not** install `@raisely/cli` from npm on machines that use this fork —
-that replaces this build with unpatched upstream. Quick check for which build
-is installed: `raisely update --help | grep allow-dirty` (no output =
-upstream build).
+The fork installs under the package name **`@hia/raisely-cli`** (bin is still
+`raisely`). This is deliberate armour against npm clobbering the build:
+
+- `npm update -g @raisely/cli` / `npm upgrade -g @raisely/cli` — no-op; that
+  package isn't installed. (Verified 2026-08-30: when the fork was still
+  named `@raisely/cli`, this command silently replaced it with registry
+  vanilla even though the versions matched.)
+- `npm install -g @raisely/cli` — npm refuses with an `EEXIST` bin conflict,
+  because a *different* package (`@hia/raisely-cli`) owns the `raisely` bin.
+  **That error is by design** — it means the guard worked. Don't `--force`
+  through it.
+- Managing the fork itself: `npm uninstall -g @hia/raisely-cli`,
+  `npm ls -g @hia/raisely-cli`.
+
+Quick check for which build is installed:
+`raisely update --help | grep allow-dirty` (no output = upstream build).
+
+Upstream releases are still detected — the CLI checks the registry's
+`@raisely/cli` dist-tags and prints fork-specific refresh instructions
+instead of `npm update`.
 
 ## Branch model
 

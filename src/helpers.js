@@ -27,10 +27,15 @@ export function getPackageInfo() {
 
 const NPM_DIST_TAGS_TIMEOUT_MS = 10_000;
 
+// This fork installs under a different name (@hia/raisely-cli) so that npm
+// can never silently replace it with the registry package. Upstream releases
+// are still tracked against the real registry package here.
+const UPSTREAM_PACKAGE = '@raisely/cli';
+
 function checkUpdate() {
 	const pkg = getPackageInfo();
 	if (!updatePromise && pkg.version) {
-		const url = `https://registry.npmjs.org/-/package/${pkg.name}/dist-tags`;
+		const url = `https://registry.npmjs.org/-/package/${UPSTREAM_PACKAGE}/dist-tags`;
 		const signal = AbortSignal.timeout(NPM_DIST_TAGS_TIMEOUT_MS);
 		updatePromise = fetch(url, { signal })
 			.then((result) => result.json())
@@ -71,10 +76,12 @@ export async function informUpdate() {
 		if (latestVersion > pkg.version) {
 			log(
 				`
-A new version of the Raisely cli is available (${latestVersion}),
+Raisely released a new upstream version (${latestVersion}).
 See changes at: https://github.com/raisely/cli/blob/master/CHANGELOG.md
-To update, run:
-		npm update @raisely/cli
+
+This is the HIA fork build — do NOT npm update. To pick up the release,
+rebase the fork's hia branch onto upstream and reinstall (see FORK.md):
+		https://github.com/High-Impact-Athletes/raisely-cli/blob/hia/FORK.md
 `,
 
 				'white'
