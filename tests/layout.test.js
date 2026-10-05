@@ -151,7 +151,7 @@ test('resolveCampaignPaths returns independent paths for each campaign in a mult
 // ---------------------------------------------------------------------------
 
 test('refusing commands block legacy and mixed layouts', () => {
-	const refusingCommands = ['update', 'deploy', 'local', 'start'];
+	const refusingCommands = ['update', 'deploy', 'local', 'start', 'publish'];
 	for (const command of refusingCommands) {
 		assert.equal(shouldRefuseLayoutForCommand(command, 'legacy'), true);
 		assert.equal(shouldRefuseLayoutForCommand(command, 'mixed'), true);
