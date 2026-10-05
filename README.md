@@ -52,6 +52,11 @@ components/
 -   `raisely start` - starts watching for and uploading validated changes to styles and components
 -   `raisely deploy` - deploy your local code to Raisely (styles, components, and pages)
 -   `raisely deploy --no-validate` - deploy without running pre-flight validation first
+-   `raisely publish [pages...]` - publish page **copy** (text only) to the live site: snapshots the live pages from the API, diffs each local page file against its live version, and PATCHes only the pages that differ and only their copy fields; never touches components or stylesheets, and never creates or deletes pages. Shows a preview, asks "Publish N page(s)?" (default No), then a separate confirm (default No) for each page marked REVERT (edited live after the local file was last committed, so publishing would overwrite that newer live copy). Pages are file basenames, with or without `.json`; omit them to check every page
+-   `raisely publish --dry-run [pages...]` - show the preview and its digest; never writes
+-   `raisely publish --dry-run --json [pages...]` - print the preview as machine-readable JSON (for agents)
+-   `raisely publish --confirm <digest> [pages...]` - publish without a prompt, only if `<digest>` matches the current preview (there is no force flag)
+-   `raisely publish` exit codes: `0` published, nothing to publish, or a clean dry-run; `1` runtime/API failure, any PATCH failure, or the live pages changed between preview and publish; `2` refused before writing anything (a blocked non-copy change, wrong or missing `--confirm` when not on a TTY, an unknown page, uncommitted page files, not a git repo, or a dry-run that found blockers)
 -   `raisely local` - work locally on a Raisely campaign without syncing changes up (includes local page JSON overrides from `campaigns/<campaign-path>/pages/` when present)
 -   `raisely local --uuid <uuid>` - open a specific campaign by UUID, skipping the picker
 -   `raisely local --port <port>` - run the local development server on a custom port instead of `8015`
@@ -65,6 +70,12 @@ components/
 -   `raisely media upload <file-or-url> --organisation <uuid>` - upload to an organisation
 -   `raisely media upload <file-or-url> --force` - skip the confirmation prompt (required for non-interactive/agent use)
 -   `raisely media upload <file-or-url> --json` - skip the confirmation prompt and output the result as JSON
+
+### Copy editors (`raisely publish`)
+
+The workflow is: `git pull` → edit page copy → `git commit` → `raisely publish [pages...]` → read the preview and confirm → `git push`. Publish only sends copy changes; anything else that differs from live (page `status`, `path`, layout, components, images, and so on) blocks the whole run with a reason. Blocked changes need Kevin. Use `raisely publish <page>` to limit the run to the pages you edited. Publish refuses to run while page files have uncommitted changes, and reminds you to push when it's done.
+
+**Caveat:** `raisely deploy` re-uploads every page from the local checkout. Whoever deploys must `git pull` first, otherwise the deploy silently reverts copy that editors have already published. This is why editors must `git push` straight after publishing.
 
 ### Custom public host (`raisely local`)
 
