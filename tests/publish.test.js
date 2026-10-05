@@ -437,6 +437,29 @@ describe('AC-2 classifier', () => {
 			});
 			expectBlocked(local);
 		});
+		test.each([
+			'javascript:alert(1)',
+			'data:text/html,x',
+			'vbscript:msgbox(1)',
+			'blob:https://x.org/abc',
+			'./donate',
+			'../donate',
+			'JavaScript:void(0)',
+		])('scheme/relative-path reference %s -> blocked', (v) => {
+			const local = edit((p) => {
+				feed(p).ctaText.value = v;
+			});
+			expectBlocked(local);
+		});
+		test.each(['Data: 2026 results', 'Note: entries close Friday'])(
+			'prose with colon %s stays copy',
+			(v) => {
+				const local = edit((p) => {
+					feed(p).ctaText.value = v;
+				});
+				expectCopy(local);
+			}
+		);
 		test('reference-looking old value is also blocked', () => {
 			const live = livePage();
 			feed(live).ctaText.value = '/donate';
