@@ -41,7 +41,13 @@ export function detectLayout(repoRoot) {
 	return 'empty';
 }
 
-const REFUSING_LAYOUT_COMMANDS = new Set(['update', 'deploy', 'local', 'start']);
+const REFUSING_LAYOUT_COMMANDS = new Set([
+	'update',
+	'deploy',
+	'local',
+	'start',
+	'publish',
+]);
 
 /**
  * Returns true when a command should refuse to run for this layout classification.

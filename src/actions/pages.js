@@ -5,6 +5,7 @@ import Handlebars from 'handlebars';
 import glob from 'glob-promise';
 
 import api from './api.js';
+import { PAYLOAD_FIELDS } from './publish-diff.js';
 
 const v3Handlebars = Handlebars.create();
 
@@ -132,6 +133,31 @@ export async function uploadPage(pageData) {
 	for (const field of PATCHABLE_FIELDS) {
 		if (rest[field] !== undefined) {
 			data[field] = rest[field];
+		}
+	}
+
+	return await api({
+		path: `/pages/${uuid}?private=1`,
+		method: 'PATCH',
+		json: { data },
+	});
+}
+
+/**
+ * PATCH /v3/pages/:uuid with a minimal publish payload (`raisely publish`).
+ * Only body / title / metaDescription / socialTitle / socialDescription may be
+ * sent; anything else is refused before the request (ADR-4, defence in depth).
+ */
+export async function publishPage(uuid, data) {
+	if (!uuid) {
+		throw new Error('publishPage needs a page uuid');
+	}
+	if (!data || typeof data !== 'object' || !Object.keys(data).length) {
+		throw new Error('publishPage needs a non-empty payload');
+	}
+	for (const key of Object.keys(data)) {
+		if (!PAYLOAD_FIELDS.includes(key)) {
+			throw new Error(`publish payload may not contain "${key}"`);
 		}
 	}
 
