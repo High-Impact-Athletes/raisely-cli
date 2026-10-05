@@ -58,6 +58,7 @@ const update = actionBuilder(() => import('./update.js'), 'update');
 const start = actionBuilder(() => import('./start.js'), 'start');
 const create = actionBuilder(() => import('./create.js'), 'create');
 const deploy = actionBuilder(() => import('./deploy.js'), 'deploy');
+const publish = actionBuilder(() => import('./publish.js'), 'publish');
 const login = actionBuilder(() => import('./login.js'), 'login');
 const logout = actionBuilder(() => import('./logout.js'), 'logout');
 const local = actionBuilder(() => import('./local.js'), 'local');
@@ -124,6 +125,19 @@ export async function cli() {
 			parseStaleAfter
 		)
 		.action(deploy);
+
+	program
+		.command('publish [pages...]')
+		.description(
+			'Publish page copy (text only) to the live site, after previewing exactly what will change'
+		)
+		.option('--dry-run', 'Show the preview and digest; never writes')
+		.option('--json', 'With --dry-run: print the preview as JSON')
+		.option(
+			'--confirm <digest>',
+			'Publish without a prompt, only if <digest> matches the current preview'
+		)
+		.action(publish);
 
 	program
 		.command('start')
