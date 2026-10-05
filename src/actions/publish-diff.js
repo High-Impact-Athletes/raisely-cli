@@ -89,6 +89,13 @@ export const NON_COPY_NAME_RE =
 
 /** §3.4 D rule 5: values that look like a reference rather than copy. */
 export const REFERENCE_VALUE_RE = /^(https?:|mailto:|tel:|\/|#|www\.)/i;
+// Also references: executable/inline URL schemes and relative paths.
+// The scheme is matched only when the colon follows the word directly AND is
+// followed by a non-space char (`javascript:alert(1)`, `data:text/html,x`), so
+// prose like "Data: 2026 results" or "Note: ..." stays copy.
+// Relative paths: leading `./` or `../`.
+export const REFERENCE_SCHEME_RE = /^(javascript|data|vbscript|blob):\S/i;
+export const RELATIVE_PATH_RE = /^\.\.?\//;
 const UUID_RE =
 	/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const NUMBER_RE = /^[-+]?(\d+\.?\d*|\.\d+)([eE][-+]?\d+)?$/;
@@ -239,6 +246,8 @@ export function looksLikeReference(v) {
 	const s = v.trim();
 	if (s === '') return false;
 	if (REFERENCE_VALUE_RE.test(s)) return true;
+	if (REFERENCE_SCHEME_RE.test(s)) return true;
+	if (RELATIVE_PATH_RE.test(s)) return true;
 	if (UUID_RE.test(s)) return true;
 	if (NUMBER_RE.test(s)) return true;
 	if (/^(true|false)$/i.test(s)) return true;
