@@ -38,10 +38,10 @@ instead of `npm update`.
 |---|---|---|
 | `master` | pristine mirror of `raisely/cli` `master` — never commit here | — |
 | `fix/page-sync-filename-collision` | custom pages all share `name: "legacy"` and overwrite each other on sync | [raisely/cli#85](https://github.com/raisely/cli/pull/85) (open) |
-| `fix/local-proxy-hang-and-injection` | `raisely local` hangs on every request (v2 `onProxyRes` on a v3 dep) and `$2` in page copy corrupts the override injection | [raisely/cli#86](https://github.com/raisely/cli/pull/86) (open) |
+| `fix/local-proxy-hang-and-injection` | `raisely local` hangs on every request (v2 `onProxyRes` on a v3 dep) and `$2` in page copy corrupts the override injection | [raisely/cli#86](https://github.com/raisely/cli/pull/86) — **merged, shipped in 2.1.1**; no longer in the `hia` stack |
 | `feat/git-safety-guards` | `update` refuses to run over a dirty git tree; `deploy` refuses when the last update is stale — see [SAFETY-GUARDS.md](SAFETY-GUARDS.md) | not yet PR'd |
 | `feat/page-publish` | `raisely publish`: previews and publishes page copy only (text fields, diffed against live, never components/styles); blocks non-copy changes, refuses uncommitted page files, digest-confirmed — see the README "Copy editors" section | not yet PR'd |
-| `hia` | **the install branch**: `master` + all of the above + this file | — |
+| `hia` | **the install branch**: `master` + all of the above (unless merged upstream) + this file | — |
 
 Every feature branch is based directly on `master` and is independent of the
 others (no overlapping files, except that `feat/git-safety-guards` and
